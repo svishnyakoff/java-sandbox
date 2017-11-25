@@ -10,34 +10,43 @@ public class KaratsubaMultiplication {
 
     /**
      * Implementation of Karatsuba algorithm for more efficient multiplication comparing to grade school algorithm
+     *
+     * Algorithm: x = 1234, y = 5678
+     * a = 12; b = 34; c = 56; d = 78;
+     *
+     * 1. Find ac
+     * 2. Find bd
+     * 3. t = (a + b)*(c + d) - ac - bd
+     *
+     * Result = bd * 10^n + t * 10^(n/2) + ac
      */
-    private static Integer[] karatsubaMultiply(Integer[] first, Integer[] second) {
+    private static Integer[] karatsubaMultiply(Integer[] x, Integer[] y) {
 
-        if (first.length <= 2 || second.length <= 2) {
-            return simpleMultiply(first, second);
+        if (x.length <= 2 || y.length <= 2) {
+            return simpleMultiply(x, y);
         }
 
-        int firstMiddleElement = (first.length + 1) / 2;
-        Integer[] a  = Arrays.copyOfRange(first, 0, firstMiddleElement);
-        Integer[] b  = Arrays.copyOfRange(first, firstMiddleElement, first.length);
+        int xMedian = (x.length + 1) / 2;
+        Integer[] xl  = Arrays.copyOfRange(x, 0, xMedian);
+        Integer[] xu  = Arrays.copyOfRange(x, xMedian, x.length);
 
-        int secondMiddleElement = (second.length + 1) / 2;
-        Integer[] c  = Arrays.copyOfRange(second, 0, secondMiddleElement);
-        Integer[] d  = Arrays.copyOfRange(second, secondMiddleElement, second.length);
+        int yMedian = (y.length + 1) / 2;
+        Integer[] yl  = Arrays.copyOfRange(y, 0, yMedian);
+        Integer[] yu  = Arrays.copyOfRange(y, yMedian, y.length);
 
-        Integer[] ac = karatsubaMultiply(a, c);
-        Integer[] bd = karatsubaMultiply(b, d);
+        Integer[] xyLower = karatsubaMultiply(xl, yl);
+        Integer[] xyUpper = karatsubaMultiply(xu, yu);
 
-        Integer[] aPlusB = sum(a, b);
-        Integer[] cPlusD = sum(c, d);
-        Integer[] abcdProduct = simpleMultiply(aPlusB, cPlusD);
-        Integer[] subract = subtract(abcdProduct, ac);
-        subract = subtract(subract, bd);
+        Integer[] xSum = sum(xl, xu);
+        Integer[] ySum = sum(yl, yu);
+        Integer[] xySumProduct = simpleMultiply(xSum, ySum);
+        Integer[] subract = subtract(xySumProduct, xyLower);
+        subract = subtract(subract, xyUpper);
 
-        int halfPower = (Math.max(first.length, second.length) + 1) / 2;
-        Integer[] result = sum(new Integer[0], bd, halfPower * 2);
-        result = sum(result, ac, 0);
-        return sum(result, subract, halfPower );
+        int halfPower = (Math.max(x.length, y.length) + 1) / 2;
+        Integer[] result = sum(new Integer[0], xyUpper, halfPower * 2);
+        result = sum(result, xyLower);
+        return sum(result, subract, halfPower);
     }
 
     /**
@@ -52,19 +61,17 @@ public class KaratsubaMultiplication {
 
         for (int i = 0; i < first.length; i++) {
             int f = first[i];
-            int remain = 0;
+            int rest = 0;
             List<Integer> tempResult = new ArrayList<>();
 
             for (Integer s : second) {
-                int prod = f * s + remain;
-                int valueToAdd = prod % 10;
-                remain = prod / 10;
-
-                tempResult.add(valueToAdd);
+                int prod = f * s + rest;
+                rest = prod / 10;
+                tempResult.add(prod % 10);
             }
 
-            if (remain != 0) {
-                tempResult.add(remain);
+            if (rest != 0) {
+                tempResult.add(rest);
             }
 
             sum(result, tempResult, i);
