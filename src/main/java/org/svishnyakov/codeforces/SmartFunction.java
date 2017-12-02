@@ -7,6 +7,10 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.copyOfRange;
 
+/**
+ * Closest pair problem
+ * http://codeforces.com/problemset/problem/429/D
+ */
 public class SmartFunction {
 
     static Element[] numbers;
@@ -19,6 +23,10 @@ public class SmartFunction {
         numbers = new Element[n];
         for (int i = 0; i < n; i++) {
             numbers[i] = new Element(i, scanner.nextInt());
+        }
+
+        for (int i = 1; i < n; i++) {
+            numbers[i] = new Element(i, numbers[i].value + numbers[i - 1].value);
         }
 
         sortedNumbers = Arrays.copyOf(numbers, numbers.length);
@@ -38,8 +46,9 @@ public class SmartFunction {
             return min;
         }
 
-        Element[] qy = Stream.of(y).filter(element -> element.index < x.length / 2).toArray(Element[]::new);
-        Element[] py = Stream.of(y).filter(element -> element.index >= x.length / 2).toArray(Element[]::new);
+        Element mean = x[x.length / 2];
+        Element[] qy = Stream.of(y).filter(element -> element.index < mean.index).toArray(Element[]::new);
+        Element[] py = Stream.of(y).filter(element -> element.index >= mean.index).toArray(Element[]::new);
 
         long leftMin = count(copyOfRange(x, 0, x.length / 2), qy);
         long rightMin = count(copyOfRange(x, x.length / 2, x.length), py);
@@ -49,13 +58,13 @@ public class SmartFunction {
 
     private static long countSplitMin(Element[] x, Element[] y, long delta) {
         Element median = x[x.length / 2 - 1];
-        Element[] sY = Stream.of(y).filter(element -> Math.pow(median.index - element.index, 2) <= delta)
+        Element[] sY = Stream.of(y).filter(element -> Math.abs(median.index - element.index) <= Math.sqrt(delta))
                 .toArray(Element[]::new);
 
         long min = delta;
 
-        for (int i = 0; i < sY.length - 1; i++) {
-            for (int j = i + 1; j < Math.min(sY.length, i + 7); j++) {
+        for (int i = 0; i < sY.length; i++) {
+            for (int j = i + 1; j < Math.min(i + 7, sY.length); j++) {
                 Element first = sY[i];
                 Element second = sY[j];
 
@@ -67,11 +76,7 @@ public class SmartFunction {
     }
 
     private static long f(Element i, Element j) {
-        long sum = 0;
-        for (int k = Math.min(i.index, j.index) + 1; k <= Math.max(i.index, j.index); k++) {
-            sum += numbers[k].value;
-        }
-        return (long) (Math.pow(i.index - j.index, 2.0)  + Math.pow(sum, 2));
+        return (long) (Math.pow(i.index - j.index, 2.0)  + Math.pow(i.value - j.value, 2));
     }
     
     private static class Element {
