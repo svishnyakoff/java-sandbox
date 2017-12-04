@@ -1,11 +1,10 @@
 package org.svishnyakov.algo;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
+
+import static org.svishnyakov.algo.Files.loadArray;
 
 /**
  * Count number of inversion by leveraging merge sort algorithm.
@@ -18,17 +17,12 @@ public class CountInversion {
     private static long totalInversions = 0;
 
     public static void main(String[] args) throws Exception {
-        int[] numbers = loadNumbers("/algo/countInversions.txt");
+        int[] numbers = loadArray("/algo/countInversions.txt");
 
         int[] sortedNumbers = countAndSort(numbers);
         System.out.println("Sorted arrays: " + Arrays.toString(sortedNumbers));
         System.out.println("Total number of inversions: " + totalInversions);
 
-    }
-
-    private static int[] loadNumbers(String filePath) throws Exception {
-        Stream<String> lines = Files.lines(Paths.get(CountInversion.class.getResource(filePath).toURI()));
-        return lines.mapToInt(Integer::valueOf).toArray();
     }
 
     private static int[] countAndSort(int[] numbers) {
