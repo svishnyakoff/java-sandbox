@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeSet;
+import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,7 +69,7 @@ public class DijkstraShortestPath {
     }
 
     private static class Graph {
-        private TreeSet<Vertex> vertices = new TreeSet<>();
+        private PriorityQueue<Vertex> vertices = new PriorityQueue<>();
         private Map<Integer, Vertex> vertexMapping = new HashMap<>();
 
         public void add(Vertex vertex) {
@@ -78,7 +78,7 @@ public class DijkstraShortestPath {
         }
 
         Vertex pollMinScoreVertex() {
-            Vertex vertex = vertices.pollFirst();
+            Vertex vertex = vertices.poll();
             vertexMapping.remove(vertex.key);
             return vertex;
         }
