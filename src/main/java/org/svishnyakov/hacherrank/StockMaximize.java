@@ -4,7 +4,12 @@ import java.util.Scanner;
 
 public class StockMaximize {
 
-    static long stockmax(int[] prices) {
+    /**
+     * Dynamic solution that didn't pass all test cases
+     * Memory: O(N^2)
+     * Time: O(N^2)
+     */
+    static long dynamincStockmax(int[] prices) {
         int size = prices.length + 1;
         long[] array = new long[size];
 
@@ -28,9 +33,32 @@ public class StockMaximize {
         return profit;
     }
 
+
+    /**
+     * Walk end -> start using more like greedy algorithm than dynamic
+     * Time: O(n)
+     * Memory O(1)
+     */
+    static long stockmax(int[] prices) {
+        int maxPrice = 0;
+        long profit = 0;
+
+        for (int i = prices.length - 1; i >= 0; i--) {
+            if (maxPrice >= prices[i]) {
+                profit += maxPrice - prices[i];
+            }
+            else {
+                maxPrice = prices[i];
+            }
+        }
+
+        return profit;
+    }
+
+
+
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-//        Scanner in = new Scanner(StockMaximize.class.getResourceAsStream("/hackerrank/test2.txt"));
         int t = in.nextInt();
         for(int a0 = 0; a0 < t; a0++){
             int n = in.nextInt();
