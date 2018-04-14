@@ -5,8 +5,8 @@ import java.util.Scanner;
 public class StockMaximize {
 
     /**
-     * Dynamic solution that didn't pass all test cases
-     * Memory: O(N^2)
+     * Dynamic solution that pass all test cases
+     * Memory: O(N)
      * Time: O(N^2)
      */
     static long dynamincStockmax(int[] prices) {
@@ -21,13 +21,15 @@ public class StockMaximize {
 
         for (int i = 0; i < prices.length - 1; i++) {
             for (int j = i + 1; j > 0; j--) {
-                    long buy = array[j - 1] - prices[i];
-                    array[j] = Math.max(array[j] , buy);
+                long buy = array[j - 1] - prices[i];
+                array[j] = Math.max(array[j], buy);
 
-                    profit = Math.max(profit, array[j] + j * prices[i + 1]);
+                profit = Math.max(profit, array[j] + (long) j * prices[i + 1]);
             }
 
-             array[0] = profit;
+            profit = Math.max(profit, array[0]);
+
+            array[0] = profit;
         }
 
         return profit;
