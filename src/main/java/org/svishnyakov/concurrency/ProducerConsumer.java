@@ -10,7 +10,12 @@ import java.util.concurrent.Semaphore;
 
 public class ProducerConsumer {
 
-    private static class BlockingQueueProducerConsumer {
+    private interface IProduceConsumer {
+        Integer produce() throws InterruptedException;
+        void consume(Integer number) throws InterruptedException;
+    }
+
+    private static class BlockingQueueProducerConsumer implements IProduceConsumer {
 
         private final BlockingQueue<Integer> queue = new LinkedBlockingQueue<>(1);
 
@@ -35,7 +40,7 @@ public class ProducerConsumer {
         }
     }
 
-    private static class SemaphoreProducerConsumer {
+    private static class SemaphoreProducerConsumer implements IProduceConsumer{
 
         private final Semaphore availableReads = new Semaphore(0);
         private final Semaphore availableWrites = new Semaphore(1);
@@ -55,50 +60,42 @@ public class ProducerConsumer {
         }
     }
 
-    @Test
-    public void testBlockingQueue() throws InterruptedException {
-        BlockingQueueProducerConsumer producerConsumer = new BlockingQueueProducerConsumer();
+    private static class IntrinsicMonitorProducerConsumer implements IProduceConsumer{
 
-        CountDownLatch latch = new CountDownLatch(1);
-        CountDownLatch completionLatch = new CountDownLatch(100);
-        Thread producer = new Thread(() -> {
-            try {
-                latch.await();
-                for (int i = 0; i < 100; i++) {
-                    producerConsumer.consume(i);
-                    System.out.println("--> " + i);
-                }
+        private Integer value;
+
+        public synchronized Integer produce() throws InterruptedException {
+            while (value == null) {
+                wait();
             }
-            catch (InterruptedException e) {
-                e.printStackTrace();
+
+            notifyAll();
+
+            int result = value;
+            value = null;
+
+            return result;
+        }
+
+        public synchronized void consume(Integer number) throws InterruptedException {
+            while (value != null) {
+                wait();
             }
-        });
 
-        Thread consumer = new Thread(() -> {
-            try {
-                latch.await();
-                for (int i = 0; i < 100; i++) {
-                    System.out.println("<-- " + producerConsumer.produce());
-                    completionLatch.countDown();
-                }
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
+            notifyAll();
 
-        producer.start();
-        consumer.start();
-
-        latch.countDown();
-
-        completionLatch.await();
+            value = number;
+        }
     }
 
-
     @Test
-    public void testSemaphoreSolution() throws InterruptedException {
-        SemaphoreProducerConsumer producerConsumer = new SemaphoreProducerConsumer();
+    public void testProducerConsumers() throws InterruptedException {
+        testProducerConsumer(new BlockingQueueProducerConsumer());
+        testProducerConsumer(new SemaphoreProducerConsumer());
+        testProducerConsumer(new IntrinsicMonitorProducerConsumer());
+    }
+
+    private void testProducerConsumer(IProduceConsumer producerConsumer) throws InterruptedException {
 
         CountDownLatch latch = new CountDownLatch(1);
         CountDownLatch completionLatch = new CountDownLatch(100);
